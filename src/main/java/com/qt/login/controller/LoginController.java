@@ -1,18 +1,26 @@
 package com.qt.login.controller;
 
+import java.util.Map;
+
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
 import com.qt.login.model.User;
 import com.qt.login.repository.UserRepository;
+// import java.util.Optional;
 
 
-@Controller
+@RestController
+@RequestMapping("/api")
+@CrossOrigin(origins = "*", maxAge= 3600)
 public class LoginController {
+    
     @Autowired
     private UserRepository userRepository;
 
@@ -40,44 +48,61 @@ public class LoginController {
     // @Autowired
     // private UserService userService;
 
-    @GetMapping("/login")
-    public String loginForm() {
-        return "index";
-    }
-    @GetMapping("/register")
-    public String registerForm() {
-        return "index";
-    }
+    // @GetMapping("/login")
+    // public String loginForm() {
+    //     return "index";
+    // }
+    // @GetMapping("/register")
+    // public String registerForm() {
+    //     return "index";
+    // }
+
+    
+    // @GetMapping("/login")
+    // public String loginPage() {
+    //     return  
+    // }
+
 
     @PostMapping("/register")
-    public String Register(@RequestParam String email,
-                                @RequestParam String password,
-                                @RequestParam String repassword,
-                                Model model){
+    public ResponseEntity<String> Register(@RequestBody Map<String,String> user ){
+        String email = user.get("email");
+        String password = user.get("password");
+        String repassword = user.get("repassword");
 
-        if ( registerUser(email, password,repassword)) {
-            return "dashboard";
+        if ( userRepository.findByEmail(email).isPresent()) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(("User Already Exists.."));
         }
-        else {
-            model.addAttribute("error",password.equals(repassword) ? "UserName is already exists" : "Passwords do not match");
-            return "index";
+
+        if ( !password.equals(repassword) ){
+            // model.addAttribute("error",password.equals(repassword) ? "UserName is already exists" : "Passwords do not match");
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Passwords does not match..");
         }
+            User newuser = new User();
+            newuser.setEmail(email);
+            newuser.setPassword(password);
+            userRepository.save(newuser);
+
+            return ResponseEntity.ok("User registered Successfully..");
+
     }
     
     
     @PostMapping("/login")
-    public String loginSubmit(@RequestParam String email,
-                              @RequestParam String password,
-                              Model model) {
+    public ResponseEntity<String> loginSubmit(@RequestBody Map<String, String> user) {
+
+        String email = user.get("email");
+        String password = user.get("password");
 
         System.out.println("Username: " + email);
         System.out.println("Password: " + password);
 
         if (authenticate(email, password)) {
-            return "dashboard";
-        } else {
-            model.addAttribute("error", "Invalid email or password");
-            return "index";
+            return ResponseEntity.ok("Login Successfully..");
+        } 
+        else {
+            // model.addAttribute("error", "Invalid email or password");
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Credentials..");
         }
     }
 }
