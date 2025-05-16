@@ -6,22 +6,19 @@ import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.web.SecurityFilterChain;
 
 @Configuration
-public class SpringSecurityConfig {
+public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
             .csrf(csrf -> csrf.disable()) // Disable CSRF for REST APIs
             .authorizeHttpRequests(auth -> auth
-                .requestMatchers("/api/**").permitAll() // Allow all API endpoints
-                .anyRequest().authenticated()
+                .requestMatchers("/api/**").permitAll() // Allow access to your APIs
+                .anyRequest().authenticated() // Secure other endpoints
             )
-            .formLogin(form -> form.disable()) // Disable default login form
-            .oauth2Login(oauth -> oauth
-                .loginPage("/login") // Optional if using Google OAuth login
-            );
+            .formLogin(form -> form.disable()) // Disable login form to avoid redirect
+            .httpBasic(httpBasic -> httpBasic.disable()); // Disable basic auth
 
         return http.build();
     }
 }
-
