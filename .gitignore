@@ -1,3 +1,45 @@
+# Compiled class file
+*.class
+
+# Log files
+*.log
+
+# BlueJ files
+*.ctxt
+
+# Mobile Tools for Java (J2ME)
+.mtj.tmp/
+
+# Package Files #
+*.jar
+*.war
+*.ear
+*.zip
+*.tar.gz
+*.rar
+
+# virtual machine crash logs, see http://www.java.com/en/download/help/error_hotspot.xml
+hs_err_pid*
+
+# Build directory
+target/
+
+# IDE files
+.idea/
+*.iml
+.project
+.classpath
+.settings/
+
+# Temp files
+*.tmp
+
+# Sensitive files - Although we use environment variables,
+# it's good practice to explicitly ignore files that might contain secrets.
+application-local.properties
+application.properties
+
+
 HELP.md
 target/
 !.mvn/wrapper/maven-wrapper.jar

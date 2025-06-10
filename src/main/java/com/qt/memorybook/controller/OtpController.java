@@ -1,4 +1,4 @@
-package com.qt.login.controller;
+package com.qt.memorybook.controller;
 
 
 import org.springframework.web.bind.annotation.RestController;

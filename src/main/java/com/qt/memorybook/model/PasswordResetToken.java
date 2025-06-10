@@ -1,4 +1,4 @@
-package com.qt.login.model;
+package com.qt.memorybook.model;
 
 import java.util.Date;
 

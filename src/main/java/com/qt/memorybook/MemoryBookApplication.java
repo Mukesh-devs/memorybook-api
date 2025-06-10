@@ -1,13 +1,13 @@
-package com.qt.login;
+package com.qt.memorybook;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication
-public class LoginApplication {
+public class MemoryBookApplication {
 
 	public static void main(String[] args) {
-		SpringApplication.run(LoginApplication.class, args);
+		SpringApplication.run(MemoryBookApplication.class, args);
 	}
 
 }

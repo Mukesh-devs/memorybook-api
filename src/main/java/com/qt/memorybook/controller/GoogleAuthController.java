@@ -1,4 +1,4 @@
-package com.qt.login.controller;
+package com.qt.memorybook.controller;
 
 import java.util.Collections;
 import java.util.Map;

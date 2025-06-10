@@ -1,4 +1,4 @@
-package com.qt.login.controller;
+package com.qt.memorybook.controller;
 
 import java.util.Date;
 import java.util.Map;
@@ -10,22 +10,24 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-// import org.springframework.web.bind.annotation.*;
+import com.qt.memorybook.model.PasswordResetToken;
+import com.qt.memorybook.model.User;
+import com.qt.memorybook.repository.PasswordResetTokenRepository;
+import com.qt.memorybook.repository.UserRepository;
+import com.qt.memorybook.security.JwtTokenProvider;
 
-import com.qt.login.model.PasswordResetToken;
-import com.qt.login.model.User;
-import com.qt.login.repository.PasswordResetTokenRepository;
-import com.qt.login.repository.UserRepository;
-// import java.util.Optional;
-
-
-
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.crypto.password.PasswordEncoder;
+import java.util.Collections;
 
 @RestController
 @RequestMapping("/api")
@@ -40,6 +42,15 @@ public class LoginController {
     
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private PasswordEncoder passwordEncoder;
+
+    @Autowired
+    private JwtTokenProvider tokenProvider;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
 
     public boolean authenticate(String email, String password) {
         return userRepository.findByEmailAndPassword(email, password).isPresent();
@@ -81,46 +92,47 @@ public class LoginController {
     // }
 
 
-    @PostMapping("/register")
-    public ResponseEntity<String> Register(@RequestBody Map<String,String> user ){
-        String email = user.get("email");
-        String password = user.get("password");
-        String repassword = user.get("repassword");
-
-        if ( userRepository.findByEmail(email).isPresent()) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(("User Already Exists.."));
-        }
-
-        if ( !password.equals(repassword) ){
-            // model.addAttribute("error",password.equals(repassword) ? "UserName is already exists" : "Passwords do not match");
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Passwords does not match..");
-        }
-            User newuser = new User();
-            newuser.setEmail(email);
-            newuser.setPassword(password);
-            userRepository.save(newuser);
-
-            return ResponseEntity.ok("User registered Successfully..");
-
-    }
-    
-    
     @PostMapping("/login")
-    public ResponseEntity<String> loginSubmit(@RequestBody Map<String, String> user) {
+    public ResponseEntity<?> authenticateUser(@RequestBody Map<String, String> loginRequest) {
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        loginRequest.get("username"), // Can be username or email
+                        loginRequest.get("password")
+                )
+        );
 
-        String email = user.get("email");
-        String password = user.get("password");
+        SecurityContextHolder.getContext().setAuthentication(authentication);
 
-        System.out.println("Username: " + email);
-        System.out.println("Password: " + password);
+        String jwt = tokenProvider.generateToken(authentication);
+        return ResponseEntity.ok(Collections.singletonMap("accessToken", jwt));
+    }
 
-        if (authenticate(email, password)) {
-            return ResponseEntity.ok("Login Successfully..");
-        } 
-        else {
-            // model.addAttribute("error", "Invalid email or password");
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Invalid Credentials..");
+    @PostMapping("/register")
+    public ResponseEntity<?> registerUser(@RequestBody Map<String, String> signUpRequest) {
+        if (userRepository.findByUsername(signUpRequest.get("username")).isPresent()) {
+            return new ResponseEntity<>("Username is already taken!", HttpStatus.BAD_REQUEST);
         }
+
+        if (userRepository.findByEmail(signUpRequest.get("email")).isPresent()) {
+            return new ResponseEntity<>("Email Address already in use!", HttpStatus.BAD_REQUEST);
+        }
+
+        if(!signUpRequest.get("password").equals(signUpRequest.get("repassword"))){
+            return new ResponseEntity<>("Passwords do not match!", HttpStatus.BAD_REQUEST);
+        }
+
+        // Create user's account
+        User user = new User();
+        user.setUsername(signUpRequest.get("username"));
+        user.setEmail(signUpRequest.get("email"));
+        user.setDisplayName(signUpRequest.get("username")); // Default display name
+        
+        // Encrypt the password
+        user.setPassword(passwordEncoder.encode(signUpRequest.get("password")));
+        
+        userRepository.save(user);
+
+        return new ResponseEntity<>("User registered successfully", HttpStatus.OK);
     }
 
     @PostMapping("/forgot-password")
