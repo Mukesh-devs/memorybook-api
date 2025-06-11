@@ -1,5 +1,6 @@
 package com.qt.memorybook.controller;
 
+import java.util.Collections;
 import java.util.Date;
 import java.util.Map;
 import java.util.Optional;
@@ -10,9 +11,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -24,14 +27,9 @@ import com.qt.memorybook.repository.PasswordResetTokenRepository;
 import com.qt.memorybook.repository.UserRepository;
 import com.qt.memorybook.security.JwtTokenProvider;
 
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.crypto.password.PasswordEncoder;
-import java.util.Collections;
-
 @RestController
 @RequestMapping("/api")
-@CrossOrigin(origins = "*", maxAge= 3600)
+// @CrossOrigin(origins = "*", maxAge= 3600)
 public class LoginController {
 
     @Autowired
