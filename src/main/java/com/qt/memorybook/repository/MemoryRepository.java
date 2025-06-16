@@ -19,4 +19,7 @@ public interface MemoryRepository extends JpaRepository<Memory, Long> {
     @Query("SELECT m FROM Memory m WHERE m.author = :user OR :user MEMBER OF m.taggedUsers ORDER BY m.createdAt DESC")
     List<Memory> findFeedForUser(@Param("user") User user);
 
+    // @Query("SELECT m FROM Memory m WHERE m.author = :user OR :user MEMBER OF m.taggedUsers ORDER BY m.createdAt DESC")
+    // Page<Memory> findFeedForUser(@Param("user") User user, Pageable pageable);
+
 }
